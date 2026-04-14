@@ -39,6 +39,9 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" side={language === "ar" ? "right" : "left"}>
+      <SidebarHeader className="flex items-center justify-center py-4">
+        <img src={mtIcon} alt="Ministry of Tourism" className={collapsed ? "h-6" : "h-10"} />
+      </SidebarHeader>
       <SidebarContent className="pt-2">
         <SidebarGroup>
           <SidebarGroupLabel>{t("nav.portal")}</SidebarGroupLabel>
