@@ -36,7 +36,7 @@ export function AppSidebar() {
   ];
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" side={language === "ar" ? "right" : "left"}>
       <SidebarContent className="pt-2">
         <SidebarGroup>
           <SidebarGroupLabel>{t("nav.portal")}</SidebarGroupLabel>
