@@ -16,9 +16,8 @@ export default function RequestAccessPage() {
   const [selected, setSelected] = useState<string[]>([]);
   const [reason, setReason] = useState("");
 
-  // In a real scenario, we'd show entities NOT in user's access list.
-  // For mock, we show all entities.
-  const entities = data?.entities || [];
+  // Only show locked entities (no access, no pending request)
+  const entities = (data?.entities || []).filter((e) => e.access_status === "locked");
 
   const toggle = (slug: string) => {
     setSelected((prev) => prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]);

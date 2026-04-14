@@ -36,7 +36,10 @@ export default function DashboardPage() {
             <DynamicIcon name={entity.icon} className="h-5 w-5" style={{ color }} />
           </div>
         )}
-        <h1 className="text-2xl font-bold">{name}</h1>
+        <div>
+          <h1 className="text-2xl font-bold">{name}</h1>
+          {entity && <span className="text-sm text-muted-foreground font-mono">{entity.display_id || entity.id}</span>}
+        </div>
       </div>
 
       {/* KPI Cards */}

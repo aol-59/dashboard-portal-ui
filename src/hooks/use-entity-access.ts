@@ -10,7 +10,7 @@ export function useGrantEntityAccess() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: grantEntityAccess,
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["entity-access"] }); toast.success("Access granted"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["entity-access"] }); qc.invalidateQueries({ queryKey: ["portal", "summary"] }); toast.success("Access granted"); },
     onError: () => toast.error("Failed to grant access"),
   });
 }
@@ -19,7 +19,7 @@ export function useRevokeEntityAccess() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: revokeEntityAccess,
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["entity-access"] }); toast.success("Access revoked"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["entity-access"] }); qc.invalidateQueries({ queryKey: ["portal", "summary"] }); toast.success("Access revoked"); },
     onError: () => toast.error("Failed to revoke access"),
   });
 }

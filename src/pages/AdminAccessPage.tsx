@@ -10,23 +10,32 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Trash2 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Plus, Trash2, ChevronsUpDown, Check } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function AdminAccessPage() {
   const { t, language } = useLanguage();
   const { data: summary } = usePortalSummary();
   const entities = summary?.entities || [];
   const [selectedSlug, setSelectedSlug] = useState(entities[0]?.slug || "");
+  const [comboOpen, setComboOpen] = useState(false);
   const { data: access, isLoading } = useEntityAccess(selectedSlug);
   const grantAccess = useGrantEntityAccess();
   const revokeAccess = useRevokeEntityAccess();
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState({ user_id: "", role: "viewer" });
 
-  // Update selected slug when entities load
   if (!selectedSlug && entities.length > 0) {
     setSelectedSlug(entities[0].slug);
   }
+
+  const selectedEntity = entities.find((e) => e.slug === selectedSlug);
+  const selectedLabel = selectedEntity
+    ? `${selectedEntity.display_id} — ${language === "ar" ? selectedEntity.name_ar : selectedEntity.name}`
+    : t("admin.select_entity");
 
   const handleGrant = () => {
     grantAccess.mutate({ user_id: form.user_id, entity_slug: selectedSlug, role: form.role }, {
@@ -44,29 +53,34 @@ export default function AdminAccessPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t("admin.name")}</TableHead>
-                <TableHead>{t("admin.email")}</TableHead>
-                <TableHead>{t("admin.department")}</TableHead>
-                <TableHead>{t("admin.assigned_at")}</TableHead>
-                <TableHead>{t("admin.actions")}</TableHead>
+                <TableHead className="text-center">{t("admin.name")}</TableHead>
+                <TableHead className="text-center">{t("admin.email")}</TableHead>
+                <TableHead className="text-center">{t("admin.department")}</TableHead>
+                <TableHead className="text-center">{t("admin.assigned_at")}</TableHead>
+                <TableHead className="text-center">{t("admin.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {(users || []).map((u) => (
                 <TableRow key={u.id}>
-                  <TableCell className="font-medium">{u.display_name}</TableCell>
-                  <TableCell>{u.email}</TableCell>
-                  <TableCell>{u.department || "—"}</TableCell>
-                  <TableCell className="text-sm">{new Date(u.assigned_at).toLocaleDateString()}</TableCell>
-                  <TableCell>
-                    <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => revokeAccess.mutate(u.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                  <TableCell className="font-medium text-center">{u.display_name}</TableCell>
+                  <TableCell className="text-center">{u.email}</TableCell>
+                  <TableCell className="text-center">{u.department || "—"}</TableCell>
+                  <TableCell className="text-center text-sm">{new Date(u.assigned_at).toLocaleDateString()}</TableCell>
+                  <TableCell className="text-center">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => revokeAccess.mutate(u.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{t("tooltip.remove")}</TooltipContent>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
               ))}
               {(!users || users.length === 0) && (
-                <TableRow><TableCell colSpan={5} className="text-center py-4 text-muted-foreground">No users</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-4 text-muted-foreground">{t("portal.no_results")}</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
@@ -84,16 +98,39 @@ export default function AdminAccessPage() {
         </Button>
       </div>
 
-      <Select value={selectedSlug} onValueChange={setSelectedSlug}>
-        <SelectTrigger className="max-w-xs">
-          <SelectValue placeholder={t("admin.select_entity")} />
-        </SelectTrigger>
-        <SelectContent>
-          {entities.map((e) => (
-            <SelectItem key={e.slug} value={e.slug}>{language === "ar" ? e.name_ar : e.name}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {/* Entity selector — searchable dropdown */}
+      <Popover open={comboOpen} onOpenChange={setComboOpen}>
+        <PopoverTrigger asChild>
+          <Button variant="outline" role="combobox" aria-expanded={comboOpen} className="max-w-md w-full justify-between">
+            {selectedLabel}
+            <ChevronsUpDown className="ms-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="p-0" style={{ width: "var(--radix-popover-trigger-width)" }}>
+          <Command>
+            <CommandInput placeholder={t("portal.search")} />
+            <CommandList>
+              <CommandEmpty>{t("portal.no_results")}</CommandEmpty>
+              <CommandGroup>
+                {entities.map((e) => {
+                  const name = language === "ar" ? e.name_ar : e.name;
+                  return (
+                    <CommandItem
+                      key={e.slug}
+                      value={`${e.display_id} ${e.name} ${e.name_ar} ${e.slug}`}
+                      onSelect={() => { setSelectedSlug(e.slug); setComboOpen(false); }}
+                    >
+                      <Check className={cn("me-2 h-4 w-4", selectedSlug === e.slug ? "opacity-100" : "opacity-0")} />
+                      <span className="font-mono text-xs me-2 opacity-60">{e.display_id}</span>
+                      {name}
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
 
       {selectedSlug && (
         <div className="space-y-4">
@@ -106,7 +143,7 @@ export default function AdminAccessPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t("btn.add_access")}</DialogTitle>
-            <DialogDescription>Grant access to a user for this entity</DialogDescription>
+            <DialogDescription>{t("nav.access_mgmt")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div><Label>{t("admin.select_user")} (ID)</Label><Input value={form.user_id} onChange={(e) => setForm({ ...form, user_id: e.target.value })} placeholder="User ID" /></div>

@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Pencil, ShieldCheck, ShieldOff } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function AdminUsersPage() {
   const { t } = useLanguage();
@@ -45,37 +46,50 @@ export default function AdminUsersPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t("admin.name")}</TableHead>
-              <TableHead>{t("admin.email")}</TableHead>
-              <TableHead>{t("admin.department")}</TableHead>
-              <TableHead>{t("admin.role")}</TableHead>
-              <TableHead>{t("admin.status")}</TableHead>
-              <TableHead>{t("admin.last_login")}</TableHead>
-              <TableHead>{t("admin.actions")}</TableHead>
+              <TableHead className="text-center">{t("admin.name")}</TableHead>
+              <TableHead className="text-center">{t("admin.email")}</TableHead>
+              <TableHead className="text-center">{t("admin.department")}</TableHead>
+              <TableHead className="text-center">{t("admin.role")}</TableHead>
+              <TableHead className="text-center">{t("admin.status")}</TableHead>
+              <TableHead className="text-center">{t("admin.last_login")}</TableHead>
+              <TableHead className="text-center">{t("admin.actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {(users || []).map((u) => (
               <TableRow key={u.id}>
-                <TableCell className="font-medium">{u.display_name}</TableCell>
-                <TableCell>{u.email}</TableCell>
-                <TableCell>{u.department || "—"}</TableCell>
-                <TableCell>{u.is_admin && <Badge>{t("admin.admin")}</Badge>}</TableCell>
-                <TableCell>
+                <TableCell className="font-medium text-center">{u.display_name}</TableCell>
+                <TableCell className="text-center">{u.email}</TableCell>
+                <TableCell className="text-center">{u.department || "—"}</TableCell>
+                <TableCell className="text-center">{u.is_admin && <Badge>{t("admin.admin")}</Badge>}</TableCell>
+                <TableCell className="text-center">
                   <Badge variant={u.is_active ? "default" : "secondary"}>{u.is_active ? t("admin.active") : t("admin.inactive")}</Badge>
                 </TableCell>
-                <TableCell className="text-sm">{u.last_login ? new Date(u.last_login).toLocaleDateString() : "—"}</TableCell>
+                <TableCell className="text-center text-sm">{u.last_login ? new Date(u.last_login).toLocaleDateString() : "—"}</TableCell>
                 <TableCell>
-                  <div className="flex gap-1">
-                    <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setEditUser({ id: u.id, display_name: u.display_name, department: u.department || "" })}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => toggleAdminMut.mutate({ id: u.id, is_admin: !u.is_admin })}>
-                      {u.is_admin ? <ShieldOff className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
-                    </Button>
-                    <div className="flex items-center">
-                      <Switch checked={u.is_active} className="direction-ltr" onCheckedChange={(checked) => updateUser.mutate({ id: u.id, is_active: checked })} />
-                    </div>
+                  <div className="flex items-center gap-2" dir="ltr">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div><Switch checked={u.is_active} onCheckedChange={(checked) => updateUser.mutate({ id: u.id, is_active: checked })} /></div>
+                      </TooltipTrigger>
+                      <TooltipContent>{u.is_active ? t("tooltip.deactivate") : t("tooltip.activate")}</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setEditUser({ id: u.id, display_name: u.display_name, department: u.department || "" })}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{t("tooltip.edit")}</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => toggleAdminMut.mutate({ id: u.id, is_admin: !u.is_admin })}>
+                          {u.is_admin ? <ShieldOff className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{u.is_admin ? t("tooltip.remove_admin") : t("tooltip.make_admin")}</TooltipContent>
+                    </Tooltip>
                   </div>
                 </TableCell>
               </TableRow>

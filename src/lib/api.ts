@@ -38,13 +38,26 @@ export interface UserProfile {
 export interface EntitySummary {
   id: string;
   slug: string;
+  display_id: string;
   name: string;
   name_ar: string;
   description: string;
+  description_ar: string;
   icon: string;
   color: string;
   sort_order: number;
-  role: string;
+  access_status: "admin" | "owner" | "viewer" | "pending" | "locked";
+}
+
+export interface Notification {
+  id: string;
+  entity_slug: string;
+  entity_name: string;
+  entity_name_ar: string;
+  requester_name: string;
+  requester_email: string;
+  reason?: string;
+  created_at: string;
 }
 
 export interface PortalSummary {
@@ -111,6 +124,8 @@ export const updateAdminUser = (id: string, data: { display_name?: string; depar
   apiFetch<void>(`/api/admin/users/${id}`, { method: "PUT", body: JSON.stringify(data) });
 export const toggleAdmin = (id: string, is_admin: boolean) =>
   apiFetch<void>(`/api/admin/users/${id}/admin`, { method: "PUT", body: JSON.stringify({ is_admin }) });
+export const fetchNotificationCount = () => apiFetch<{ count: number }>("/api/notifications/count");
+export const fetchNotifications = () => apiFetch<Notification[]>("/api/notifications");
 
 // Mock Data
 function getMockData<T>(path: string, options?: RequestInit): T {
@@ -125,10 +140,10 @@ function getMockData<T>(path: string, options?: RequestInit): T {
     return {
       user: { id: "1", email: "demo@example.com", display_name: "Demo User", is_admin: true },
       entities: [
-        { id: "1", slug: "finance", name: "Finance Dashboard", name_ar: "لوحة المالية", description: "Financial analytics and reporting", icon: "DollarSign", color: "#10B981", sort_order: 1, role: "owner" },
-        { id: "2", slug: "hr", name: "HR Dashboard", name_ar: "لوحة الموارد البشرية", description: "Human resources management", icon: "Users", color: "#3B82F6", sort_order: 2, role: "viewer" },
-        { id: "3", slug: "operations", name: "Operations", name_ar: "العمليات", description: "Operational metrics and KPIs", icon: "TrendingUp", color: "#F59E0B", sort_order: 3, role: "viewer" },
-        { id: "4", slug: "sales", name: "Sales Pipeline", name_ar: "خط أنابيب المبيعات", description: "Sales tracking and forecasting", icon: "ShoppingCart", color: "#EF4444", sort_order: 4, role: "viewer" },
+        { id: "1", slug: "finance", display_id: "FN01", name: "Finance Dashboard", name_ar: "لوحة المالية", description: "Financial analytics and reporting", description_ar: "التحليلات المالية والتقارير", icon: "DollarSign", color: "#10B981", sort_order: 1, access_status: "owner" },
+        { id: "2", slug: "hr", display_id: "HR02", name: "HR Dashboard", name_ar: "لوحة الموارد البشرية", description: "Human resources management", description_ar: "إدارة الموارد البشرية", icon: "Users", color: "#3B82F6", sort_order: 2, access_status: "viewer" },
+        { id: "3", slug: "operations", display_id: "OP03", name: "Operations", name_ar: "العمليات", description: "Operational metrics and KPIs", description_ar: "مقاييس العمليات ومؤشرات الأداء", icon: "TrendingUp", color: "#F59E0B", sort_order: 3, access_status: "pending" },
+        { id: "4", slug: "sales", display_id: "SA04", name: "Sales Pipeline", name_ar: "خط أنابيب المبيعات", description: "Sales tracking and forecasting", description_ar: "تتبع المبيعات والتنبؤ", icon: "ShoppingCart", color: "#EF4444", sort_order: 4, access_status: "locked" },
       ],
     } as T;
   }

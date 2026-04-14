@@ -56,12 +56,12 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {summary?.entities && summary.entities.length > 0 && (
+        {summary?.entities && summary.entities.filter(e => ["admin","owner","viewer"].includes(e.access_status)).length > 0 && (
           <SidebarGroup>
             <SidebarGroupLabel>{t("nav.dashboards")}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {summary.entities.map((entity) => (
+                {summary.entities.filter(e => ["admin","owner","viewer"].includes(e.access_status)).map((entity) => (
                   <SidebarMenuItem key={entity.slug}>
                     <SidebarMenuButton asChild>
                       <NavLink
