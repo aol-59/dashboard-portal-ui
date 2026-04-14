@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Moon, Sun, Globe, LogOut, Bell, Settings, Calendar, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import mtLogo from "@/assets/mt-logo.svg";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useLanguage } from "@/lib/language";
@@ -94,12 +95,13 @@ export function AppHeader() {
   };
 
   return (
-    <header className="h-14 border-b bg-card flex items-center justify-between px-4 shrink-0">
-      {/* Left: Sidebar trigger + App name */}
+    <header className="h-16 border-b bg-card flex items-center justify-between px-4 shrink-0">
+      {/* Left: Sidebar trigger + Logo + App name */}
       <div className="flex items-center gap-3">
         <SidebarTrigger />
         <Separator orientation="vertical" className="h-6" />
-        <div className="hidden sm:block">
+        <img src={mtLogo} alt="Logo" className="h-10 hidden sm:block dark:brightness-0 dark:invert" />
+        <div className="hidden lg:block">
           <span className="font-bold text-base text-foreground">{t("app.name")}</span>
         </div>
       </div>
