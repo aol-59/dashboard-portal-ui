@@ -101,8 +101,14 @@ export function AppHeader() {
       <div className="flex items-center gap-3">
         <SidebarTrigger />
         <Separator orientation="vertical" className="h-6" />
-        <img src={mtLogoLight} alt="Ministry of Tourism" className="h-8 hidden sm:block dark:hidden" />
-        <img src={mtLogoDark} alt="Ministry of Tourism" className="h-8 hidden dark:sm:block" />
+        <div className="hidden sm:flex items-center gap-2">
+          <img src={mtLogoLight} alt="Ministry of Tourism" className="h-8 dark:hidden" />
+          <img src={mtLogoDark} alt="Ministry of Tourism" className="h-8 hidden dark:block" />
+          <div className="flex flex-col leading-tight">
+            <span className="text-xs font-semibold text-foreground">{language === "ar" ? "وزارة السياحة" : "Ministry of Tourism"}</span>
+            <span className="text-[10px] text-muted-foreground">{language === "ar" ? "Ministry of Tourism" : "وزارة السياحة"}</span>
+          </div>
+        </div>
       </div>
 
       {/* Center: Date + Time */}
