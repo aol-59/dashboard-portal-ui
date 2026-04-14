@@ -100,43 +100,7 @@ export default function PortalPage() {
         <div className="absolute -bottom-1/3 -right-1/4 w-[500px] h-[500px] rounded-full bg-primary/5 blur-[100px]" />
       </div>
 
-      {/* ── Hero Banner ── */}
-      <div
-        className={`relative overflow-hidden rounded-3xl transition-all duration-700 ${
-          mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
-        }`}
-        style={{
-          background: "linear-gradient(135deg, #064e3b 0%, #065f46 40%, #047857 70%, #059669 100%)",
-        }}
-      >
-        {/* Dot grid overlay */}
-        <div className="absolute inset-0 opacity-20" style={{
-          backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px)",
-          backgroundSize: "20px 20px",
-        }} />
-        {/* Shimmer sweep */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div
-            className="absolute inset-0 animate-shimmer"
-            style={{
-              background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%)",
-              width: "100%",
-            }}
-          />
-        </div>
-
-        <div className="relative z-10 px-8 py-10 sm:px-10 sm:py-12">
-          <p className="text-emerald-200/80 text-sm font-medium tracking-wide uppercase mb-2">
-            {getGreeting(language)}
-          </p>
-          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-2 tracking-tight">
-            {summary?.user?.display_name || "—"}
-          </h1>
-          <p className="text-emerald-100/60 text-base">
-            {t("portal.entities")}
-          </p>
-        </div>
-      </div>
+      {/* removed hero banner */}
 
       {/* ── Stats Row ── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
