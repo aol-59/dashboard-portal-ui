@@ -95,14 +95,12 @@ export function AppHeader() {
   };
 
   return (
-    <header className="h-14 border-b bg-card flex items-center justify-between px-4 shrink-0">
-      {/* Left: Sidebar trigger + App name */}
+    <header className="h-16 border-b bg-card flex items-center justify-between px-4 shrink-0">
+      {/* Left: Sidebar trigger + Logo */}
       <div className="flex items-center gap-3">
         <SidebarTrigger />
         <Separator orientation="vertical" className="h-6" />
-        <div className="hidden sm:flex items-center">
-          <img src={mtLogo} alt="Ministry of Tourism" className="h-10 dark:brightness-0 dark:invert" />
-        </div>
+        <img src={mtLogo} alt="Ministry of Tourism" className="h-12 hidden sm:block dark:brightness-0 dark:invert" />
       </div>
 
       {/* Center: Date + Time */}
