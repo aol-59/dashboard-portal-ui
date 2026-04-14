@@ -1,72 +1,81 @@
 import { useEffect, useRef } from "react";
 
-// Saudi Arabia outline — denser points for a clearer shape, sequential order for border drawing
+// Real Saudi Arabia border coordinates (normalized 0-1, from GeoJSON)
 const SAUDI_BORDER: [number, number][] = [
-  // Northwest (Jordan border) going east
-  [0.36, 0.06], [0.38, 0.05], [0.40, 0.04], [0.43, 0.03], [0.46, 0.03],
-  [0.49, 0.02], [0.52, 0.02], [0.55, 0.03], [0.58, 0.04], [0.61, 0.05],
-  // Northern border (Iraq)
-  [0.64, 0.05], [0.67, 0.04], [0.70, 0.05], [0.73, 0.06], [0.76, 0.07],
-  [0.79, 0.08], [0.82, 0.08], [0.85, 0.09], [0.88, 0.10], [0.90, 0.12],
-  // Northeast (Kuwait/Iraq) curving down
-  [0.91, 0.14], [0.92, 0.17], [0.93, 0.20],
-  // Eastern coast (Persian Gulf) — detailed
-  [0.94, 0.23], [0.95, 0.26], [0.94, 0.29], [0.93, 0.31], [0.91, 0.33],
-  [0.90, 0.35], [0.91, 0.37], [0.92, 0.39], [0.93, 0.41], [0.94, 0.43],
-  [0.93, 0.45], [0.92, 0.47], [0.91, 0.49], [0.90, 0.51], [0.89, 0.53],
-  // Southeast coast (UAE/Oman)
-  [0.87, 0.55], [0.85, 0.57], [0.83, 0.59], [0.81, 0.61], [0.80, 0.63],
-  [0.79, 0.65], [0.78, 0.67], [0.76, 0.69],
-  // Southern (Empty Quarter toward Yemen)
-  [0.74, 0.71], [0.72, 0.73], [0.69, 0.75], [0.66, 0.77], [0.63, 0.79],
-  [0.60, 0.81], [0.57, 0.83], [0.54, 0.85], [0.51, 0.87], [0.48, 0.89],
-  [0.45, 0.90], [0.42, 0.91], [0.39, 0.92], [0.36, 0.93],
-  // Southwest (Yemen border going northwest)
-  [0.33, 0.93], [0.30, 0.92], [0.27, 0.91], [0.24, 0.89], [0.22, 0.87],
-  [0.20, 0.85], [0.18, 0.82], [0.16, 0.79], [0.15, 0.76], [0.13, 0.73],
-  [0.12, 0.70],
-  // Western coast (Red Sea) going north
-  [0.11, 0.67], [0.10, 0.64], [0.10, 0.61], [0.11, 0.58], [0.12, 0.55],
-  [0.13, 0.52], [0.14, 0.49], [0.15, 0.46], [0.16, 0.43], [0.17, 0.40],
-  [0.18, 0.37], [0.19, 0.34], [0.21, 0.31], [0.23, 0.28], [0.25, 0.25],
-  [0.27, 0.22], [0.29, 0.19], [0.31, 0.16], [0.33, 0.13], [0.34, 0.10],
-  [0.35, 0.08],
+  [0.387, 1.0], [0.381, 0.973], [0.367, 0.954], [0.363, 0.929], [0.339, 0.906],
+  [0.313, 0.853], [0.3, 0.802], [0.267, 0.758], [0.246, 0.748], [0.214, 0.687],
+  [0.209, 0.643], [0.211, 0.606], [0.184, 0.536], [0.161, 0.511], [0.136, 0.498],
+  [0.12, 0.462], [0.123, 0.448], [0.109, 0.415], [0.095, 0.401], [0.077, 0.354],
+  [0.048, 0.303], [0.024, 0.259], [0.0, 0.259], [0.007, 0.225], [0.01, 0.203],
+  [0.015, 0.177], [0.068, 0.187], [0.089, 0.168], [0.1, 0.145], [0.137, 0.136],
+  [0.144, 0.115], [0.16, 0.105], [0.113, 0.041], [0.208, 0.01], [0.217, 0.0],
+  [0.274, 0.017], [0.345, 0.061], [0.479, 0.189], [0.567, 0.194], [0.61, 0.2],
+  [0.622, 0.23], [0.655, 0.228], [0.674, 0.283], [0.697, 0.297], [0.705, 0.319],
+  [0.738, 0.346], [0.741, 0.372], [0.736, 0.393], [0.742, 0.414], [0.756, 0.432],
+  [0.762, 0.453], [0.769, 0.468], [0.783, 0.481], [0.797, 0.476], [0.806, 0.501],
+  [0.808, 0.515], [0.826, 0.579], [0.969, 0.611], [0.978, 0.598], [1.0, 0.643],
+  [0.968, 0.769], [0.826, 0.832], [0.689, 0.857], [0.644, 0.885], [0.61, 0.951],
+  [0.588, 0.962], [0.576, 0.941], [0.558, 0.944], [0.512, 0.938], [0.503, 0.931],
+  [0.448, 0.933], [0.435, 0.939], [0.416, 0.922], [0.403, 0.953], [0.408, 0.98],
+  [0.387, 1.0],
 ];
 
-// Interior city/region dots
+// Interpolate extra dots along the border for denser dot coverage
+function interpolateBorder(pts: [number, number][], density: number): [number, number][] {
+  const result: [number, number][] = [];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [x1, y1] = pts[i];
+    const [x2, y2] = pts[i + 1];
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const steps = Math.max(1, Math.round(dist * density));
+    for (let s = 0; s < steps; s++) {
+      const t = s / steps;
+      result.push([x1 + dx * t, y1 + dy * t]);
+    }
+  }
+  result.push(pts[pts.length - 1]);
+  return result;
+}
+
+const BORDER_DOTS = interpolateBorder(SAUDI_BORDER, 200);
+
+// Interior city dots
+const CITY_DOTS: { pos: [number, number]; name: string }[] = [
+  { pos: [0.62, 0.35], name: "Riyadh" },
+  { pos: [0.82, 0.55], name: "Dammam" },
+  { pos: [0.15, 0.52], name: "Jeddah" },
+  { pos: [0.14, 0.58], name: "Mecca" },
+  { pos: [0.30, 0.85], name: "Abha" },
+  { pos: [0.35, 0.15], name: "Tabuk" },
+  { pos: [0.22, 0.30], name: "Madinah" },
+  { pos: [0.50, 0.20], name: "Ha'il" },
+  { pos: [0.70, 0.30], name: "Buraydah" },
+  { pos: [0.60, 0.70], name: "Najran" },
+];
+
+// Interior network points
 const INTERIOR_DOTS: [number, number][] = [
-  [0.60, 0.38], // Riyadh
-  [0.88, 0.40], // Dammam
-  [0.18, 0.62], // Jeddah
-  [0.16, 0.70], // Mecca
-  [0.22, 0.82], // Abha
-  [0.55, 0.20], // Ha'il
-  [0.72, 0.25], // Hafar Al-Batin
-  [0.40, 0.35], // Madinah
-  [0.50, 0.50], // center
-  [0.65, 0.55], // Al Kharj
-  [0.45, 0.65], // Wadi Dawasir
-  [0.35, 0.50], // Yanbu region
-  [0.75, 0.40], // Al Ahsa
-  [0.55, 0.70], // Najran approach
-  [0.42, 0.42], // Qassim
+  ...CITY_DOTS.map(c => c.pos),
+  [0.45, 0.45], [0.55, 0.55], [0.40, 0.65], [0.70, 0.50],
+  [0.35, 0.35], [0.50, 0.30], [0.65, 0.45], [0.30, 0.55],
+  [0.55, 0.75], [0.75, 0.65], [0.45, 0.80], [0.60, 0.25],
 ];
-
-const ALL_DOTS = [...SAUDI_BORDER, ...INTERIOR_DOTS];
 
 function getConnections(dots: [number, number][], maxDist: number) {
-  const connections: [number, number][] = [];
+  const conns: [number, number][] = [];
   for (let i = 0; i < dots.length; i++) {
     for (let j = i + 1; j < dots.length; j++) {
       const dx = dots[i][0] - dots[j][0];
       const dy = dots[i][1] - dots[j][1];
-      if (Math.sqrt(dx * dx + dy * dy) < maxDist) connections.push([i, j]);
+      if (Math.sqrt(dx * dx + dy * dy) < maxDist) conns.push([i, j]);
     }
   }
-  return connections;
+  return conns;
 }
 
-const interiorConnections = getConnections(ALL_DOTS, 0.13);
+const interiorConns = getConnections(INTERIOR_DOTS, 0.22);
 
 export default function SaudiMapAnimation() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -89,116 +98,128 @@ export default function SaudiMapAnimation() {
 
     const draw = () => {
       time += 0.004;
-      const w = canvas.width;
-      const h = canvas.height;
-      ctx.clearRect(0, 0, w, h);
+      const cw = canvas.width;
+      const ch = canvas.height;
+      ctx.clearRect(0, 0, cw, ch);
 
-      const mapOffX = w * 0.08;
-      const mapOffY = h * 0.03;
-      const mapW = w * 0.84;
-      const mapH = h * 0.94;
+      // Center the map with proper aspect ratio
+      const mapScale = Math.min(cw * 0.75, ch * 0.85);
+      const mapOffX = (cw - mapScale) / 2;
+      const mapOffY = (ch - mapScale) / 2 + ch * 0.02;
 
-      const toX = (nx: number) => mapOffX + nx * mapW;
-      const toY = (ny: number) => mapOffY + ny * mapH;
+      const toX = (nx: number) => mapOffX + nx * mapScale;
+      const toY = (ny: number) => mapOffY + ny * mapScale;
 
-      // Draw the border outline as a connected path (the key shape)
+      // 1. Faint filled shape
       ctx.beginPath();
       SAUDI_BORDER.forEach(([x, y], i) => {
-        const px = toX(x);
-        const py = toY(y);
-        if (i === 0) ctx.moveTo(px, py);
-        else ctx.lineTo(px, py);
+        if (i === 0) ctx.moveTo(toX(x), toY(y));
+        else ctx.lineTo(toX(x), toY(y));
       });
       ctx.closePath();
-      ctx.strokeStyle = "rgba(16, 185, 129, 0.12)";
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-
-      // Faint fill
-      ctx.fillStyle = "rgba(16, 185, 129, 0.015)";
+      ctx.fillStyle = "rgba(16, 185, 129, 0.012)";
       ctx.fill();
 
-      // Draw interior network connections
-      interiorConnections.forEach(([i, j], idx) => {
-        const pulse = Math.sin(time * 2 + idx * 0.2) * 0.5 + 0.5;
-        ctx.strokeStyle = `rgba(16, 185, 129, ${0.02 + pulse * 0.03})`;
-        ctx.lineWidth = 0.5;
+      // 2. Interior network connections
+      interiorConns.forEach(([i, j], idx) => {
+        const pulse = Math.sin(time * 1.5 + idx * 0.4) * 0.5 + 0.5;
+        ctx.strokeStyle = `rgba(16, 185, 129, ${0.03 + pulse * 0.04})`;
+        ctx.lineWidth = 0.8;
         ctx.beginPath();
-        ctx.moveTo(toX(ALL_DOTS[i][0]), toY(ALL_DOTS[i][1]));
-        ctx.lineTo(toX(ALL_DOTS[j][0]), toY(ALL_DOTS[j][1]));
+        ctx.moveTo(toX(INTERIOR_DOTS[i][0]), toY(INTERIOR_DOTS[i][1]));
+        ctx.lineTo(toX(INTERIOR_DOTS[j][0]), toY(INTERIOR_DOTS[j][1]));
         ctx.stroke();
       });
 
-      // Draw border dots (brighter, define the shape)
-      SAUDI_BORDER.forEach(([x, y], i) => {
-        const pulse = Math.sin(time * 3 + i * 0.4) * 0.5 + 0.5;
+      // 3. Border dots — the main shape
+      BORDER_DOTS.forEach(([x, y], i) => {
+        const pulse = Math.sin(time * 3 + i * 0.15) * 0.5 + 0.5;
         const px = toX(x);
         const py = toY(y);
 
         // Glow
         ctx.beginPath();
-        ctx.arc(px, py, 5 + pulse * 2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(16, 185, 129, ${0.03 + pulse * 0.02})`;
-        ctx.fill();
-
-        // Dot
-        ctx.beginPath();
-        ctx.arc(px, py, 2 + pulse * 0.8, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(16, 185, 129, ${0.2 + pulse * 0.2})`;
-        ctx.fill();
-      });
-
-      // Draw interior dots (city markers, slightly bigger)
-      INTERIOR_DOTS.forEach(([x, y], i) => {
-        const pulse = Math.sin(time * 2.5 + i * 0.8) * 0.5 + 0.5;
-        const px = toX(x);
-        const py = toY(y);
-
-        // Outer glow ring
-        ctx.beginPath();
-        ctx.arc(px, py, 8 + pulse * 4, 0, Math.PI * 2);
+        ctx.arc(px, py, 4 + pulse * 2, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(16, 185, 129, ${0.02 + pulse * 0.02})`;
         ctx.fill();
 
         // Dot
         ctx.beginPath();
-        ctx.arc(px, py, 3 + pulse, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(16, 185, 129, ${0.25 + pulse * 0.25})`;
+        ctx.arc(px, py, 1.5 + pulse * 0.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(16, 185, 129, ${0.18 + pulse * 0.18})`;
         ctx.fill();
       });
 
-      // Traveling data pulses along the border
-      for (let k = 0; k < 3; k++) {
-        const pos = ((time * 8 + k * 30) % SAUDI_BORDER.length);
+      // 4. Connect adjacent border dots with faint lines
+      for (let i = 0; i < BORDER_DOTS.length - 1; i++) {
+        const pulse = Math.sin(time * 2 + i * 0.1) * 0.5 + 0.5;
+        ctx.strokeStyle = `rgba(16, 185, 129, ${0.04 + pulse * 0.04})`;
+        ctx.lineWidth = 0.6;
+        ctx.beginPath();
+        ctx.moveTo(toX(BORDER_DOTS[i][0]), toY(BORDER_DOTS[i][1]));
+        ctx.lineTo(toX(BORDER_DOTS[i + 1][0]), toY(BORDER_DOTS[i + 1][1]));
+        ctx.stroke();
+      }
+
+      // 5. City dots (larger, with glow rings)
+      CITY_DOTS.forEach(({ pos: [x, y] }, i) => {
+        const pulse = Math.sin(time * 2 + i * 1.2) * 0.5 + 0.5;
+        const px = toX(x);
+        const py = toY(y);
+
+        // Outer ring
+        ctx.beginPath();
+        ctx.arc(px, py, 10 + pulse * 5, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(16, 185, 129, ${0.04 + pulse * 0.04})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+
+        // Inner glow
+        ctx.beginPath();
+        ctx.arc(px, py, 6 + pulse * 2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(16, 185, 129, ${0.03 + pulse * 0.03})`;
+        ctx.fill();
+
+        // Core dot
+        ctx.beginPath();
+        ctx.arc(px, py, 3 + pulse, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(16, 185, 129, ${0.3 + pulse * 0.3})`;
+        ctx.fill();
+      });
+
+      // 6. Traveling pulses along border
+      for (let k = 0; k < 4; k++) {
+        const pos = ((time * 15 + k * (BORDER_DOTS.length / 4)) % BORDER_DOTS.length);
         const idx = Math.floor(pos);
         const frac = pos - idx;
-        const curr = SAUDI_BORDER[idx % SAUDI_BORDER.length];
-        const next = SAUDI_BORDER[(idx + 1) % SAUDI_BORDER.length];
+        const curr = BORDER_DOTS[idx % BORDER_DOTS.length];
+        const next = BORDER_DOTS[(idx + 1) % BORDER_DOTS.length];
         const px = toX(curr[0] + (next[0] - curr[0]) * frac);
         const py = toY(curr[1] + (next[1] - curr[1]) * frac);
 
-        ctx.beginPath();
-        ctx.arc(px, py, 4, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(16, 185, 129, 0.6)";
-        ctx.fill();
-
         // Trail glow
         ctx.beginPath();
-        ctx.arc(px, py, 10, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(16, 185, 129, 0.1)";
+        ctx.arc(px, py, 12, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(16, 185, 129, 0.08)";
+        ctx.fill();
+
+        // Bright dot
+        ctx.beginPath();
+        ctx.arc(px, py, 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(16, 185, 129, 0.7)";
         ctx.fill();
       }
 
-      // Traveling pulses along interior connections
-      for (let k = 0; k < 4; k++) {
-        const connIdx = Math.floor((time * 12 + k * 19) % interiorConnections.length);
-        const [i, j] = interiorConnections[connIdx];
-        const t = ((time * 4 + k * 2.7) % 1);
-        const px = toX(ALL_DOTS[i][0] + (ALL_DOTS[j][0] - ALL_DOTS[i][0]) * t);
-        const py = toY(ALL_DOTS[i][1] + (ALL_DOTS[j][1] - ALL_DOTS[i][1]) * t);
+      // 7. Data pulses along interior connections
+      for (let k = 0; k < 3; k++) {
+        const connIdx = Math.floor((time * 10 + k * 13) % interiorConns.length);
+        const [i, j] = interiorConns[connIdx];
+        const t = ((time * 3 + k * 2.1) % 1);
+        const px = toX(INTERIOR_DOTS[i][0] + (INTERIOR_DOTS[j][0] - INTERIOR_DOTS[i][0]) * t);
+        const py = toY(INTERIOR_DOTS[i][1] + (INTERIOR_DOTS[j][1] - INTERIOR_DOTS[i][1]) * t);
         ctx.beginPath();
-        ctx.arc(px, py, 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(16, 185, 129, 0.45)";
+        ctx.arc(px, py, 2, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(16, 185, 129, 0.5)";
         ctx.fill();
       }
 
