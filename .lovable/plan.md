@@ -1,78 +1,46 @@
 
 
-# Dashboard Portal Frontend — Implementation Plan
+# Portal Page Executive Redesign
 
-## Theme (from hajj-vista.lovable.app)
-- **Light, clean, professional** with white/off-white backgrounds (`#F8F9FA` / `#FFFFFF`)
-- **Green primary accent** (`#10B981` emerald) for highlights, progress bars, active states
-- Cards with subtle borders and soft shadows, rounded corners
-- Clean header bar with user info, dark mode toggle, notifications
-- Tab-style navigation for sections
-- Filter bars with dropdowns
-- KPI cards with large numbers, progress bars, and targets
-- Dark mode support with deep slate backgrounds
+## Overview
+Transform the portal page from a basic card grid into a premium, executive-grade dashboard with glassmorphism, animated stats summary, staggered card animations, and a polished hero greeting section.
 
-## Pages & Features
+## Changes
 
-### 1. Welcome Page (`/`)
-- Public, no auth — full-screen centered layout with gradient background
-- App logo, heading "Dashboard Portal", tagline, prominent Login button
-- Auto-redirect to `/portal` if already authenticated
+### 1. Hero Section with Executive Greeting
+- Large welcome banner with gradient background matching the emerald theme
+- User's name prominently displayed with a subtle greeting based on time of day
+- Summary stats row: total entities, accessible count, pending requests — displayed as glassmorphic stat cards with animated counters
 
-### 2. Auth Layer (Keycloak)
-- `src/lib/auth.ts` — keycloak-js initialization with env vars
-- `check-sso` mode (no forced login), export `login()`, `logout()`, `isAuthenticated()`, token getter
-- Mock mode when `VITE_USE_MOCKS=true` for Lovable preview
-- `<ProtectedRoute>` wrapper component for all non-welcome routes
+### 2. Glassmorphic Entity Cards
+- Replace flat cards with glassmorphism effect (backdrop-blur, semi-transparent backgrounds, subtle borders)
+- Larger icon containers with gradient backgrounds matching each entity's color
+- Hover effects: card lifts with shadow bloom, border glow in entity color
+- Staggered fade-in animation on page load (each card appears with slight delay)
+- Accent stripe replaced with a left-side gradient bar
 
-### 3. App Shell Layout (all authenticated pages)
-- Collapsible sidebar (left in LTR, right in RTL) with dynamic entity links from API
-- Header: app name, language toggle (EN/عربي), dark/light toggle, user avatar dropdown
-- Mobile: sidebar becomes slide-out drawer via Sheet component
+### 3. Enhanced Search & Filter Bar
+- Frosted glass search bar with larger styling
+- Pill-shaped filter buttons with smooth active state transitions
+- Subtle separator between search and filters
 
-### 4. Portal Home (`/portal`)
-- Welcome greeting with user's display name
-- Grid of entity cards from `/api/v1/portal/summary`
-- Each card: entity name, description, Lucide icon, colored accent bar — clickable to `/dashboard/:slug`
-- Empty state with "Request Access" CTA
+### 4. Visual Polish
+- Subtle animated gradient mesh background behind the entire page (not as intense as welcome page, but present)
+- Grid spacing improvements for executive feel (more whitespace)
+- Better typography hierarchy — larger greeting, medium entity names, refined descriptions
+- Smooth CSS transitions and hover micro-interactions
 
-### 5. Request Access (`/portal/request-access`)
-- List available entities with checkboxes, optional reason field
-- Submit via `POST /api/v1/access-requests`, success toast
+## Technical Details
 
-### 6. Access Requests (`/portal/access-requests`)
-- Table with filter tabs (All/Pending/Approved/Rejected)
-- Approve/Reject actions for pending requests with status badges
+### Files Modified
+- **`src/pages/PortalPage.tsx`** — Complete redesign of the JSX structure and styling. Add staggered animation with `useState`/`useEffect` for mount animations. Add summary stats computation from `summary.entities`. Glassmorphism classes via Tailwind utilities.
 
-### 7. Entity Dashboard (`/dashboard/:slug`)
-- Dynamic page with entity header + colored accent
-- Placeholder KPI cards (4), chart area, recent items table
-- Ready for future entity-specific API endpoints
+### Files Created
+- None — all changes contained in PortalPage.tsx using existing Tailwind utilities and existing components.
 
-### 8. Admin: User Management (`/admin/users`)
-- Users table with Add/Edit/Toggle Admin/Deactivate actions
-- Dialog modals for forms, expandable entity access per user
-
-### 9. Admin: Entity Access (`/admin/access`)
-- Entity selector dropdown, Owners/Viewers sections
-- Add/Remove access with searchable user dropdown
-
-## Cross-Cutting
-
-### Internationalization (EN/AR)
-- `src/lib/language.tsx` — React Context with `useLanguage()` hook, `t()` function
-- RTL support: `dir="rtl"` on HTML, sidebar flips, all text via translation keys
-- Entity names use `name` (EN) or `name_ar` (AR) from API
-
-### Dark Mode
-- Class-based toggle with Tailwind `dark:` variants, persisted in localStorage
-
-### API Client (`src/lib/api.ts`)
-- Typed fetch functions with Bearer token, 401 → login redirect
-- React Query hooks in `src/hooks/` for each API area with mutations + cache invalidation
-
-### UX Details
-- Loading skeletons, error states with retry, success/error toasts
-- Hover effects on cards, sortable tables, proper focus states
-- Responsive: desktop, tablet, mobile
+### Approach
+- Pure CSS/Tailwind — no new dependencies
+- Maintain all existing functionality (search, filter, click behavior, access dialog)
+- Use `animate-fade-in` from existing animation utilities with staggered delays via inline styles
+- Glassmorphism: `backdrop-blur-xl bg-white/5 border border-white/10` (dark-mode aware)
 
