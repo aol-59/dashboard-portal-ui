@@ -55,13 +55,72 @@ const CITY_DOTS: { pos: [number, number]; name: string }[] = [
   { pos: [0.60, 0.70], name: "Najran" },
 ];
 
-// Interior network points
+// Check if a point is inside the Saudi border polygon (ray casting)
+function isInsideBorder(px: number, py: number): boolean {
+  let inside = false;
+  for (let i = 0, j = SAUDI_BORDER.length - 1; i < SAUDI_BORDER.length; j = i++) {
+    const [xi, yi] = SAUDI_BORDER[i];
+    const [xj, yj] = SAUDI_BORDER[j];
+    if ((yi > py) !== (yj > py) && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+// Generate a dense grid of interior points that fall inside the map
+function generateInteriorGrid(): [number, number][] {
+  const points: [number, number][] = [];
+  const step = 0.045;
+  for (let x = 0.05; x < 0.98; x += step) {
+    for (let y = 0.05; y < 0.98; y += step) {
+      // Add slight randomness for organic feel
+      const jx = x + (Math.sin(x * 97 + y * 53) * 0.012);
+      const jy = y + (Math.cos(x * 61 + y * 89) * 0.012);
+      if (isInsideBorder(jx, jy)) {
+        points.push([jx, jy]);
+      }
+    }
+  }
+  return points;
+}
+
+const INTERIOR_GRID = generateInteriorGrid();
+
+// Interior network points (cities + grid)
 const INTERIOR_DOTS: [number, number][] = [
   ...CITY_DOTS.map(c => c.pos),
-  [0.45, 0.45], [0.55, 0.55], [0.40, 0.65], [0.70, 0.50],
-  [0.35, 0.35], [0.50, 0.30], [0.65, 0.45], [0.30, 0.55],
-  [0.55, 0.75], [0.75, 0.65], [0.45, 0.80], [0.60, 0.25],
+  ...INTERIOR_GRID,
 ];
+
+// Animated random lines state
+interface AnimLine {
+  fromIdx: number;
+  toIdx: number;
+  progress: number;
+  speed: number;
+  life: number;
+  maxLife: number;
+}
+
+function createRandomLine(dotCount: number): AnimLine {
+  return {
+    fromIdx: Math.floor(Math.random() * dotCount),
+    toIdx: Math.floor(Math.random() * dotCount),
+    progress: 0,
+    speed: 0.005 + Math.random() * 0.01,
+    life: 0,
+    maxLife: 120 + Math.random() * 180,
+  };
+}
+
+const NUM_ACTIVE_LINES = 12;
+const activeLines: AnimLine[] = [];
+for (let i = 0; i < NUM_ACTIVE_LINES; i++) {
+  const line = createRandomLine(0); // will reinit on first frame
+  line.life = Math.random() * 200; // stagger start
+  activeLines.push(line);
+}
 
 function getConnections(dots: [number, number][], maxDist: number) {
   const conns: [number, number][] = [];
