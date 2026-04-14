@@ -100,5 +100,11 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Source Sans 3', 'IBM Plex Sans Arabic', sans-serif;
+  }
+
+  [dir="rtl"] body,
+  [lang="ar"] body {
+    font-family: 'IBM Plex Sans Arabic', 'Source Sans 3', sans-serif;
   }
 }

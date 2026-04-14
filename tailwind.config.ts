@@ -13,6 +13,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["'Source Sans 3'", "'IBM Plex Sans Arabic'", "sans-serif"],
+        arabic: ["'IBM Plex Sans Arabic'", "'Source Sans 3'", "sans-serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
