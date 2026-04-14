@@ -445,11 +445,11 @@ export default function AnimatedCharts() {
       // Radial bar — top center-left
       drawRadialBar(ctx, w * 0.28, h * 0.1, s * 0.06, time, 0.8);
 
-      // Donut chart — top right
-      drawDonutChart(ctx, w * 0.86, h * 0.14, s * 0.06, time, 1);
+      // Radial histogram — top right
+      drawRadialHistogram(ctx, w * 0.86, h * 0.14, s * 0.07, time, 1);
 
-      // Semicircle donut — top center-right
-      drawSemicircleDonut(ctx, w * 0.70, h * 0.10, s * 0.055, time + 1, 0.8);
+      // Histogram — top center-right
+      drawHistogram(ctx, w * 0.62, h * 0.04, w * 0.16, h * 0.1, time + 1, 0.8);
 
       // === MIDDLE ROW ===
       // Pie chart — mid left
@@ -474,8 +474,8 @@ export default function AnimatedCharts() {
       // Bar chart — bottom center-left
       drawBarChart(ctx, w * 0.25, h * 0.82, w * 0.14, h * 0.1, time + 2, 0.6);
 
-      // Mini donut — bottom center
-      drawDonutChart(ctx, w * 0.55, h * 0.88, s * 0.03, time + 3, 0.4);
+      // Mini radial histogram — bottom center
+      drawRadialHistogram(ctx, w * 0.55, h * 0.86, s * 0.035, time + 3, 0.4);
 
       animRef.current = requestAnimationFrame(draw);
     };
