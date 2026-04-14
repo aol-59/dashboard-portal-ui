@@ -1,10 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { LogIn, Sparkles } from "lucide-react";
+import { LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { login, isAuthenticated } from "@/lib/auth";
 import { useLanguage } from "@/lib/language";
-import mtLogo from "@/assets/mt-logo.svg";
 import SaudiMapAnimation from "@/components/SaudiMapAnimation";
 import AnimatedCharts from "@/components/AnimatedCharts";
 
@@ -48,19 +47,6 @@ export default function WelcomePage() {
           mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
         }`}
       >
-        {/* Ministry logo with elegant glow */}
-        <div className="relative mb-12">
-          <div className="absolute inset-0 bg-primary/15 blur-3xl rounded-full scale-[2]" />
-          <img
-            src={mtLogo}
-            alt="Ministry of Tourism"
-            className="relative h-20 md:h-24 brightness-0 invert opacity-95 drop-shadow-[0_0_30px_hsl(153,100%,40%,0.2)]"
-          />
-        </div>
-
-        {/* Decorative line */}
-        <div className="w-20 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent mb-10" />
-
         {/* Title */}
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-5 leading-tight">
           {t("app.name")}
@@ -84,11 +70,11 @@ export default function WelcomePage() {
           </Button>
         </div>
 
-        {/* Secure note */}
-        <p className="text-[11px] text-white/20 mt-6 flex items-center gap-1.5">
-          <Sparkles className="h-3 w-3" />
-          {t("app.secure_login")}
-        </p>
+      </div>
+
+      {/* Footer */}
+      <div className="absolute bottom-6 inset-x-0 text-center z-10">
+        <p className="text-xs text-white/30">{t("app.agency")}</p>
       </div>
     </div>
   );

@@ -26,7 +26,6 @@ export function AppSidebar() {
 
   const portalItems = [
     { title: t("nav.home"), url: "/portal", icon: Home },
-    { title: t("nav.request_access"), url: "/portal/request-access", icon: KeyRound },
   ];
 
   const adminItems = [

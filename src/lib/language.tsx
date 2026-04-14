@@ -11,9 +11,10 @@ interface LanguageContextType {
 
 const translations: Record<Language, Record<string, string>> = {
   en: {
-    "app.name": "Dashboard Portal",
+    "app.name": "Digital Vision Center",
     "app.tagline": "Access your dashboards, analytics, and insights in one place",
     "app.secure_login": "Secure login powered by your organization",
+    "app.agency": "Digital Transformation Agency",
     "nav.home": "Home",
     "nav.portal": "Portal",
     "nav.request_access": "Request Access",
@@ -107,9 +108,10 @@ const translations: Record<Language, Record<string, string>> = {
     "lang.toggle": "عربي",
   },
   ar: {
-    "app.name": "بوابة لوحة القيادة",
+    "app.name": "مركز الرؤية الرقمية",
     "app.tagline": "الوصول إلى لوحات المعلومات والتحليلات والرؤى في مكان واحد",
     "app.secure_login": "تسجيل دخول آمن مدعوم من مؤسستك",
+    "app.agency": "وكالة التحول الرقمي",
     "nav.home": "الرئيسية",
     "nav.portal": "البوابة",
     "nav.request_access": "طلب الوصول",
