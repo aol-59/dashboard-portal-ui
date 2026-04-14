@@ -4,12 +4,14 @@ import { useLocation } from "react-router-dom";
 import { useLanguage } from "@/lib/language";
 import { usePortalSummary } from "@/hooks/use-portal";
 import { DynamicIcon } from "@/components/DynamicIcon";
+import mtIcon from "@/assets/mt-icon.png";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
