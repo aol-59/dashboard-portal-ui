@@ -8,36 +8,46 @@ const TEAL = "20, 184, 166";
 const PURPLE = "139, 92, 246";
 const ROSE = "244, 63, 94";
 
-// --- Donut Chart ---
-function drawDonutChart(
+// --- Histogram ---
+function drawHistogram(
   ctx: CanvasRenderingContext2D,
-  cx: number, cy: number, outerR: number,
+  x: number, y: number, w: number, h: number,
   time: number, alpha: number
 ) {
-  const innerR = outerR * 0.55;
-  const slices = [0.30, 0.25, 0.22, 0.23];
-  const colors = [GREEN, GOLD, BLUE, TEAL];
-  let startAngle = -Math.PI / 2 + time * 0.2;
-  slices.forEach((slice, i) => {
-    const sweep = slice * Math.PI * 2;
-    const progress = Math.min(1, (Math.sin(time * 0.8 + i * 1.2) * 0.5 + 0.5) * 1.1);
-    const endAngle = startAngle + sweep * (0.75 + progress * 0.25);
-    ctx.beginPath();
-    ctx.arc(cx, cy, outerR, startAngle, endAngle);
-    ctx.arc(cx, cy, innerR, endAngle, startAngle, true);
-    ctx.closePath();
-    ctx.fillStyle = `rgba(${colors[i]}, ${alpha * (0.12 + progress * 0.12)})`;
-    ctx.fill();
-    ctx.strokeStyle = `rgba(${colors[i]}, ${alpha * 0.25})`;
+  const bins = 12;
+  const binW = w / bins;
+  const colors = [GREEN, GREEN, TEAL, TEAL, GREEN, GOLD, GOLD, GREEN, TEAL, BLUE, GREEN, GREEN];
+  for (let i = 0; i < bins; i++) {
+    // Bell-curve-ish distribution with animation
+    const center = bins / 2;
+    const dist = Math.abs(i - center) / center;
+    const base = (1 - dist * dist) * 0.85;
+    const wave = Math.sin(time * 1.5 + i * 0.6) * 0.12;
+    const barH = h * Math.max(0.05, base + wave);
+    const bx = x + i * binW;
+    const by = y + h - barH;
+
+    const grad = ctx.createLinearGradient(bx, by, bx, by + barH);
+    grad.addColorStop(0, `rgba(${colors[i]}, ${alpha * 0.25})`);
+    grad.addColorStop(1, `rgba(${colors[i]}, ${alpha * 0.05})`);
+    ctx.fillStyle = grad;
+    ctx.fillRect(bx + 0.5, by, binW - 1, barH);
+
+    // Top edge highlight
+    ctx.strokeStyle = `rgba(${colors[i]}, ${alpha * 0.35})`;
     ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(bx + 0.5, by);
+    ctx.lineTo(bx + binW - 0.5, by);
     ctx.stroke();
-    startAngle += sweep;
-  });
-  ctx.fillStyle = `rgba(${GREEN}, ${alpha * 0.3})`;
-  ctx.font = `bold ${outerR * 0.35}px monospace`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(`${Math.round(68 + Math.sin(time) * 5)}%`, cx, cy);
+  }
+  // Base line
+  ctx.strokeStyle = `rgba(${SLATE}, ${alpha * 0.1})`;
+  ctx.lineWidth = 0.5;
+  ctx.beginPath();
+  ctx.moveTo(x, y + h);
+  ctx.lineTo(x + w, y + h);
+  ctx.stroke();
 }
 
 // --- Heat Map ---
@@ -284,37 +294,42 @@ function drawBoxChart(
   }
 }
 
-// --- Semicircle Donut ---
-function drawSemicircleDonut(
+// --- Radial Histogram ---
+function drawRadialHistogram(
   ctx: CanvasRenderingContext2D,
   cx: number, cy: number, r: number,
   time: number, alpha: number
 ) {
-  const innerR = r * 0.55;
-  const slices = [0.3, 0.25, 0.2, 0.25];
-  const colors = [GREEN, GOLD, TEAL, BLUE];
-  let startAngle = Math.PI; // start from left
-  slices.forEach((slice, i) => {
-    const sweep = slice * Math.PI; // only semicircle
-    const progress = Math.min(1, (Math.sin(time * 0.9 + i * 1.3) * 0.5 + 0.5) * 1.1);
-    const endAngle = startAngle + sweep * (0.7 + progress * 0.3);
+  const bins = 20;
+  const innerR = r * 0.3;
+  const angleStep = (Math.PI * 2) / bins;
+  const colors = [GREEN, TEAL, GOLD, BLUE, PURPLE];
+
+  for (let i = 0; i < bins; i++) {
+    const startAngle = i * angleStep - Math.PI / 2;
+    const endAngle = startAngle + angleStep * 0.85;
+    // Animated height
+    const base = 0.4 + Math.sin(i * 1.3 + 0.5) * 0.3;
+    const wave = Math.sin(time * 1.8 + i * 0.5) * 0.2;
+    const barR = innerR + (r - innerR) * Math.max(0.1, base + wave);
+    const color = colors[i % colors.length];
+
     ctx.beginPath();
-    ctx.arc(cx, cy, r, startAngle, endAngle);
+    ctx.arc(cx, cy, barR, startAngle, endAngle);
     ctx.arc(cx, cy, innerR, endAngle, startAngle, true);
     ctx.closePath();
-    ctx.fillStyle = `rgba(${colors[i]}, ${alpha * (0.12 + progress * 0.12)})`;
+    ctx.fillStyle = `rgba(${color}, ${alpha * 0.15})`;
     ctx.fill();
-    ctx.strokeStyle = `rgba(${colors[i]}, ${alpha * 0.2})`;
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = `rgba(${color}, ${alpha * 0.25})`;
+    ctx.lineWidth = 0.5;
     ctx.stroke();
-    startAngle += sweep;
-  });
-  // Center value
-  ctx.fillStyle = `rgba(${GREEN}, ${alpha * 0.3})`;
-  ctx.font = `bold ${r * 0.3}px monospace`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(`${Math.round(74 + Math.sin(time * 1.5) * 8)}`, cx, cy - r * 0.1);
+  }
+
+  // Center circle
+  ctx.beginPath();
+  ctx.arc(cx, cy, innerR * 0.8, 0, Math.PI * 2);
+  ctx.fillStyle = `rgba(16, 185, 129, ${alpha * 0.03})`;
+  ctx.fill();
 }
 
 // --- Connected Scatter Plot ---
