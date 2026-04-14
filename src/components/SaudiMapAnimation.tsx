@@ -154,6 +154,12 @@ export default function SaudiMapAnimation() {
     window.addEventListener("resize", resize);
 
     let time = 0;
+    // Init active lines once we know dot count
+    const dotCount = INTERIOR_DOTS.length;
+    for (let i = 0; i < activeLines.length; i++) {
+      activeLines[i] = createRandomLine(dotCount);
+      activeLines[i].progress = Math.random(); // stagger
+    }
 
     const draw = () => {
       time += 0.004;
@@ -161,7 +167,6 @@ export default function SaudiMapAnimation() {
       const ch = canvas.height;
       ctx.clearRect(0, 0, cw, ch);
 
-      // Center the map with proper aspect ratio
       const mapScale = Math.min(cw * 0.75, ch * 0.85);
       const mapOffX = (cw - mapScale) / 2;
       const mapOffY = (ch - mapScale) / 2 + ch * 0.02;
@@ -179,37 +184,107 @@ export default function SaudiMapAnimation() {
       ctx.fillStyle = "rgba(16, 185, 129, 0.012)";
       ctx.fill();
 
-      // 2. Interior network connections
+      // 2. Static nearby connections (faint network)
       interiorConns.forEach(([i, j], idx) => {
-        const pulse = Math.sin(time * 1.5 + idx * 0.4) * 0.5 + 0.5;
-        ctx.strokeStyle = `rgba(16, 185, 129, ${0.03 + pulse * 0.04})`;
-        ctx.lineWidth = 0.8;
+        const pulse = Math.sin(time * 1.5 + idx * 0.3) * 0.5 + 0.5;
+        ctx.strokeStyle = `rgba(16, 185, 129, ${0.015 + pulse * 0.02})`;
+        ctx.lineWidth = 0.5;
         ctx.beginPath();
         ctx.moveTo(toX(INTERIOR_DOTS[i][0]), toY(INTERIOR_DOTS[i][1]));
         ctx.lineTo(toX(INTERIOR_DOTS[j][0]), toY(INTERIOR_DOTS[j][1]));
         ctx.stroke();
       });
 
-      // 3. Border dots — the main shape
+      // 3. Interior grid dots
+      INTERIOR_GRID.forEach(([x, y], i) => {
+        const pulse = Math.sin(time * 2.5 + i * 0.3) * 0.5 + 0.5;
+        const px = toX(x);
+        const py = toY(y);
+
+        ctx.beginPath();
+        ctx.arc(px, py, 1.2 + pulse * 0.4, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(16, 185, 129, ${0.1 + pulse * 0.1})`;
+        ctx.fill();
+      });
+
+      // 4. Animated random lines shooting between points
+      activeLines.forEach((line) => {
+        line.progress += line.speed;
+        line.life += 1;
+
+        // Reset when done
+        if (line.progress >= 1 || line.life >= line.maxLife) {
+          Object.assign(line, createRandomLine(dotCount));
+        }
+
+        const from = INTERIOR_DOTS[line.fromIdx];
+        const to = INTERIOR_DOTS[line.toIdx];
+        if (!from || !to) return;
+
+        const fx = toX(from[0]);
+        const fy = toY(from[1]);
+        const tx = toX(to[0]);
+        const ty = toY(to[1]);
+
+        // Draw the line up to current progress
+        const headX = fx + (tx - fx) * line.progress;
+        const headY = fy + (ty - fy) * line.progress;
+        const tailProgress = Math.max(0, line.progress - 0.3);
+        const tailX = fx + (tx - fx) * tailProgress;
+        const tailY = fy + (ty - fy) * tailProgress;
+
+        // Gradient line (fades in from tail to head)
+        const grad = ctx.createLinearGradient(tailX, tailY, headX, headY);
+        grad.addColorStop(0, "rgba(16, 185, 129, 0)");
+        grad.addColorStop(1, "rgba(16, 185, 129, 0.25)");
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(tailX, tailY);
+        ctx.lineTo(headX, headY);
+        ctx.stroke();
+
+        // Bright head dot
+        ctx.beginPath();
+        ctx.arc(headX, headY, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(16, 185, 129, 0.6)";
+        ctx.fill();
+
+        // Glow at head
+        ctx.beginPath();
+        ctx.arc(headX, headY, 6, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(16, 185, 129, 0.06)";
+        ctx.fill();
+
+        // Pulse at source dot
+        if (line.progress < 0.2) {
+          const p = line.progress / 0.2;
+          ctx.beginPath();
+          ctx.arc(fx, fy, 4 + p * 8, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(16, 185, 129, ${0.2 * (1 - p)})`;
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+      });
+
+      // 5. Border dots
       BORDER_DOTS.forEach(([x, y], i) => {
         const pulse = Math.sin(time * 3 + i * 0.15) * 0.5 + 0.5;
         const px = toX(x);
         const py = toY(y);
 
-        // Glow
         ctx.beginPath();
         ctx.arc(px, py, 4 + pulse * 2, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(16, 185, 129, ${0.02 + pulse * 0.02})`;
         ctx.fill();
 
-        // Dot
         ctx.beginPath();
         ctx.arc(px, py, 1.5 + pulse * 0.5, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(16, 185, 129, ${0.18 + pulse * 0.18})`;
         ctx.fill();
       });
 
-      // 4. Connect adjacent border dots with faint lines
+      // 6. Connect adjacent border dots
       for (let i = 0; i < BORDER_DOTS.length - 1; i++) {
         const pulse = Math.sin(time * 2 + i * 0.1) * 0.5 + 0.5;
         ctx.strokeStyle = `rgba(16, 185, 129, ${0.04 + pulse * 0.04})`;
@@ -220,33 +295,30 @@ export default function SaudiMapAnimation() {
         ctx.stroke();
       }
 
-      // 5. City dots (larger, with glow rings)
+      // 7. City dots (larger)
       CITY_DOTS.forEach(({ pos: [x, y] }, i) => {
         const pulse = Math.sin(time * 2 + i * 1.2) * 0.5 + 0.5;
         const px = toX(x);
         const py = toY(y);
 
-        // Outer ring
         ctx.beginPath();
         ctx.arc(px, py, 10 + pulse * 5, 0, Math.PI * 2);
         ctx.strokeStyle = `rgba(16, 185, 129, ${0.04 + pulse * 0.04})`;
         ctx.lineWidth = 0.5;
         ctx.stroke();
 
-        // Inner glow
         ctx.beginPath();
         ctx.arc(px, py, 6 + pulse * 2, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(16, 185, 129, ${0.03 + pulse * 0.03})`;
         ctx.fill();
 
-        // Core dot
         ctx.beginPath();
         ctx.arc(px, py, 3 + pulse, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(16, 185, 129, ${0.3 + pulse * 0.3})`;
         ctx.fill();
       });
 
-      // 6. Traveling pulses along border
+      // 8. Traveling pulses along border
       for (let k = 0; k < 4; k++) {
         const pos = ((time * 15 + k * (BORDER_DOTS.length / 4)) % BORDER_DOTS.length);
         const idx = Math.floor(pos);
@@ -256,29 +328,14 @@ export default function SaudiMapAnimation() {
         const px = toX(curr[0] + (next[0] - curr[0]) * frac);
         const py = toY(curr[1] + (next[1] - curr[1]) * frac);
 
-        // Trail glow
         ctx.beginPath();
         ctx.arc(px, py, 12, 0, Math.PI * 2);
         ctx.fillStyle = "rgba(16, 185, 129, 0.08)";
         ctx.fill();
 
-        // Bright dot
         ctx.beginPath();
         ctx.arc(px, py, 3.5, 0, Math.PI * 2);
         ctx.fillStyle = "rgba(16, 185, 129, 0.7)";
-        ctx.fill();
-      }
-
-      // 7. Data pulses along interior connections
-      for (let k = 0; k < 3; k++) {
-        const connIdx = Math.floor((time * 10 + k * 13) % interiorConns.length);
-        const [i, j] = interiorConns[connIdx];
-        const t = ((time * 3 + k * 2.1) % 1);
-        const px = toX(INTERIOR_DOTS[i][0] + (INTERIOR_DOTS[j][0] - INTERIOR_DOTS[i][0]) * t);
-        const py = toY(INTERIOR_DOTS[i][1] + (INTERIOR_DOTS[j][1] - INTERIOR_DOTS[i][1]) * t);
-        ctx.beginPath();
-        ctx.arc(px, py, 2, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(16, 185, 129, 0.5)";
         ctx.fill();
       }
 
