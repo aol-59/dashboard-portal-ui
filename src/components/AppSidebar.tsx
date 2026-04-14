@@ -4,12 +4,14 @@ import { useLocation } from "react-router-dom";
 import { useLanguage } from "@/lib/language";
 import { usePortalSummary } from "@/hooks/use-portal";
 import { DynamicIcon } from "@/components/DynamicIcon";
+import mtIcon from "@/assets/mt-icon.png";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -37,6 +39,9 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" side={language === "ar" ? "right" : "left"}>
+      <SidebarHeader className="flex items-center justify-center py-4">
+        <img src={mtIcon} alt="Ministry of Tourism" className={collapsed ? "h-6" : "h-10"} />
+      </SidebarHeader>
       <SidebarContent className="pt-2">
         <SidebarGroup>
           <SidebarGroupLabel>{t("nav.portal")}</SidebarGroupLabel>
