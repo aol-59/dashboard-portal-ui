@@ -134,7 +134,7 @@ function getConnections(dots: [number, number][], maxDist: number) {
   return conns;
 }
 
-const interiorConns = getConnections(INTERIOR_DOTS, 0.22);
+const interiorConns = getConnections(INTERIOR_DOTS, 0.12);
 
 export default function SaudiMapAnimation() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
