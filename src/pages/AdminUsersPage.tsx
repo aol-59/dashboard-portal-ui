@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLanguage } from "@/lib/language";
-import { useAdminUsers, useCreateAdminUser, useUpdateAdminUser, useToggleAdmin } from "@/hooks/use-admin-users";
+import { useAdminUsers, useUpdateAdminUser, useToggleAdmin } from "@/hooks/use-admin-users";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,22 +9,16 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Pencil, ShieldCheck, ShieldOff } from "lucide-react";
+import { Pencil, ShieldCheck, ShieldOff, Search } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function AdminUsersPage() {
   const { t } = useLanguage();
   const { data: users, isLoading } = useAdminUsers();
-  const createUser = useCreateAdminUser();
   const updateUser = useUpdateAdminUser();
   const toggleAdminMut = useToggleAdmin();
-  const [addOpen, setAddOpen] = useState(false);
   const [editUser, setEditUser] = useState<{ id: string; display_name: string; department: string } | null>(null);
-  const [form, setForm] = useState({ email: "", display_name: "", department: "" });
-
-  const handleAdd = () => {
-    createUser.mutate(form, { onSuccess: () => { setAddOpen(false); setForm({ email: "", display_name: "", department: "" }); } });
-  };
+  const [search, setSearch] = useState("");
 
   const handleEdit = () => {
     if (!editUser) return;
@@ -33,13 +27,33 @@ export default function AdminUsersPage() {
     });
   };
 
+  const filtered = (users || []).filter((u) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      u.display_name?.toLowerCase().includes(q) ||
+      u.email?.toLowerCase().includes(q) ||
+      u.department?.toLowerCase().includes(q) ||
+      String(u.id).includes(q)
+    );
+  });
+
   if (isLoading) return <div className="space-y-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-12" />)}</div>;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t("nav.users")}</h1>
-        <Button onClick={() => setAddOpen(true)} className="gap-2"><Plus className="h-4 w-4" />{t("btn.add_user")}</Button>
+      <h1 className="text-2xl font-bold">{t("nav.users")}</h1>
+      <p className="text-sm text-muted-foreground">{t("admin.users_desc")}</p>
+
+      {/* Search */}
+      <div className="relative max-w-md">
+        <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder={t("admin.search_users")}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="ps-9"
+        />
       </div>
 
       <div className="rounded-lg border">
@@ -56,7 +70,7 @@ export default function AdminUsersPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {(users || []).map((u) => (
+            {filtered.map((u) => (
               <TableRow key={u.id}>
                 <TableCell className="font-medium text-center">{u.display_name}</TableCell>
                 <TableCell className="text-center">{u.email}</TableCell>
@@ -67,7 +81,7 @@ export default function AdminUsersPage() {
                 </TableCell>
                 <TableCell className="text-center text-sm">{u.last_login ? new Date(u.last_login).toLocaleDateString() : "—"}</TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-2" dir="ltr">
+                  <div className="flex items-center gap-2 justify-center" dir="ltr">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div><Switch checked={u.is_active} onCheckedChange={(checked) => updateUser.mutate({ id: u.id, is_active: checked })} /></div>
@@ -94,35 +108,19 @@ export default function AdminUsersPage() {
                 </TableCell>
               </TableRow>
             ))}
+            {filtered.length === 0 && (
+              <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">{t("portal.no_results")}</TableCell></TableRow>
+            )}
           </TableBody>
         </Table>
       </div>
-
-      {/* Add User Dialog */}
-      <Dialog open={addOpen} onOpenChange={setAddOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("btn.add_user")}</DialogTitle>
-            <DialogDescription>Add a new user to the system</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div><Label>{t("admin.email")}</Label><Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
-            <div><Label>{t("admin.display_name")}</Label><Input value={form.display_name} onChange={(e) => setForm({ ...form, display_name: e.target.value })} /></div>
-            <div><Label>{t("admin.department")}</Label><Input value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} /></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setAddOpen(false)}>{t("btn.cancel")}</Button>
-            <Button onClick={handleAdd} disabled={createUser.isPending}>{t("btn.save")}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Edit User Dialog */}
       <Dialog open={!!editUser} onOpenChange={() => setEditUser(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t("btn.edit")}</DialogTitle>
-            <DialogDescription>Edit user details</DialogDescription>
+            <DialogDescription>{t("admin.edit_desc")}</DialogDescription>
           </DialogHeader>
           {editUser && (
             <div className="space-y-4">
