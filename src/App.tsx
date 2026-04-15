@@ -14,6 +14,7 @@ import AccessRequestsPage from "./pages/AccessRequestsPage";
 import DashboardPage from "./pages/DashboardPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminAccessPage from "./pages/AdminAccessPage";
+import TextToSQLPage from "./pages/TextToSQLPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
               <Route path="/dashboard/:slug" element={<ProtectedShell><DashboardPage /></ProtectedShell>} />
               <Route path="/admin/users" element={<ProtectedShell><AdminUsersPage /></ProtectedShell>} />
               <Route path="/admin/access" element={<ProtectedShell><AdminAccessPage /></ProtectedShell>} />
+              <Route path="/ai/text-to-sql" element={<ProtectedShell><TextToSQLPage /></ProtectedShell>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

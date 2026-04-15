@@ -1,4 +1,4 @@
-import { Home, KeyRound, ClipboardList, Users, ShieldCheck } from "lucide-react";
+import { Home, KeyRound, ClipboardList, Users, ShieldCheck, Database } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useLanguage } from "@/lib/language";
@@ -98,6 +98,21 @@ export function AppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
         )}
+        <SidebarGroup>
+          <SidebarGroupLabel>{language === "ar" ? "أدوات الذكاء" : "AI Tools"}</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink to="/ai/text-to-sql" className="hover:bg-accent/50" activeClassName="bg-accent text-accent-foreground font-medium">
+                    <Database className="h-4 w-4 me-2" />
+                    {!collapsed && <span>{language === "ar" ? "استعلام بالذكاء" : "Text-to-SQL"}</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
     </Sidebar>
   );
