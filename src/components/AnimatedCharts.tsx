@@ -382,9 +382,18 @@ function drawStreamGraph(
   }
 }
 
+type ChartType = "rect" | "circle";
+interface ChartRegion {
+  type: ChartType;
+  // For rect: x,y,w,h. For circle: x,y = center, w = radius
+  x: number; y: number; w: number; h: number;
+  draw: (time: number, alpha: number, scale: number) => void;
+}
+
 export default function AnimatedCharts() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef<number>(0);
+  const mouseRef = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -399,7 +408,22 @@ export default function AnimatedCharts() {
     resize();
     window.addEventListener("resize", resize);
 
+    const handleMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      mouseRef.current = {
+        x: (e.clientX - rect.left) * (canvas.width / rect.width),
+        y: (e.clientY - rect.top) * (canvas.height / rect.height),
+      };
+    };
+    const handleLeave = () => { mouseRef.current = null; };
+    canvas.addEventListener("mousemove", handleMove);
+    canvas.addEventListener("mouseleave", handleLeave);
+
+    // Per-chart hover progress (0 = idle, 1 = fully hovered)
+    const hoverProgress: number[] = new Array(12).fill(0);
     let time = 0;
+    // Per-chart local time accumulator (advances faster when hovered)
+    const localTimes: number[] = new Array(12).fill(0);
 
     const draw = () => {
       time += 0.008;
@@ -409,23 +433,67 @@ export default function AnimatedCharts() {
 
       const s = Math.min(w, h);
 
-      // === TOP ROW ===
-      drawHeatMap(ctx, w * 0.02, h * 0.04, w * 0.14, h * 0.08, time, 1);
-      drawRadialBar(ctx, w * 0.28, h * 0.1, s * 0.06, time, 0.9);
-      drawRadialHistogram(ctx, w * 0.86, h * 0.14, s * 0.07, time, 1);
-      drawHistogram(ctx, w * 0.62, h * 0.04, w * 0.16, h * 0.1, time + 1, 0.9);
+      // Define all charts with regions for hit-testing + draw callbacks
+      const charts: ChartRegion[] = [
+        // TOP ROW
+        { type: "rect", x: w * 0.02, y: h * 0.04, w: w * 0.14, h: h * 0.08,
+          draw: (t, a, sc) => drawHeatMap(ctx, w * 0.02 - (w * 0.14) * (sc - 1) / 2, h * 0.04 - (h * 0.08) * (sc - 1) / 2, w * 0.14 * sc, h * 0.08 * sc, t, a) },
+        { type: "circle", x: w * 0.28, y: h * 0.1, w: s * 0.06, h: 0,
+          draw: (t, a, sc) => drawRadialBar(ctx, w * 0.28, h * 0.1, s * 0.06 * sc, t, a) },
+        { type: "circle", x: w * 0.86, y: h * 0.14, w: s * 0.07, h: 0,
+          draw: (t, a, sc) => drawRadialHistogram(ctx, w * 0.86, h * 0.14, s * 0.07 * sc, t, a) },
+        { type: "rect", x: w * 0.62, y: h * 0.04, w: w * 0.16, h: h * 0.1,
+          draw: (t, a, sc) => drawHistogram(ctx, w * 0.62 - (w * 0.16) * (sc - 1) / 2, h * 0.04 - (h * 0.1) * (sc - 1) / 2, w * 0.16 * sc, h * 0.1 * sc, t + 1, a) },
 
-      // === MIDDLE ROW ===
-      drawPieChart(ctx, w * 0.08, h * 0.4, s * 0.06, time + 1, 0.85);
-      drawConnectedScatter(ctx, w * 0.78, h * 0.35, w * 0.18, h * 0.1, time, 0.8);
-      drawStreamGraph(ctx, w * 0.02, h * 0.55, w * 0.18, h * 0.1, time, 0.75);
-      drawBoxChart(ctx, w * 0.82, h * 0.52, w * 0.14, h * 0.12, time, 0.7);
+        // MIDDLE ROW
+        { type: "circle", x: w * 0.08, y: h * 0.4, w: s * 0.06, h: 0,
+          draw: (t, a, sc) => drawPieChart(ctx, w * 0.08, h * 0.4, s * 0.06 * sc, t + 1, a) },
+        { type: "rect", x: w * 0.78, y: h * 0.35, w: w * 0.18, h: h * 0.1,
+          draw: (t, a, sc) => drawConnectedScatter(ctx, w * 0.78 - (w * 0.18) * (sc - 1) / 2, h * 0.35 - (h * 0.1) * (sc - 1) / 2, w * 0.18 * sc, h * 0.1 * sc, t, a) },
+        { type: "rect", x: w * 0.02, y: h * 0.55, w: w * 0.18, h: h * 0.1,
+          draw: (t, a, sc) => drawStreamGraph(ctx, w * 0.02 - (w * 0.18) * (sc - 1) / 2, h * 0.55 - (h * 0.1) * (sc - 1) / 2, w * 0.18 * sc, h * 0.1 * sc, t, a) },
+        { type: "rect", x: w * 0.82, y: h * 0.52, w: w * 0.14, h: h * 0.12,
+          draw: (t, a, sc) => drawBoxChart(ctx, w * 0.82 - (w * 0.14) * (sc - 1) / 2, h * 0.52 - (h * 0.12) * (sc - 1) / 2, w * 0.14 * sc, h * 0.12 * sc, t, a) },
 
-      // === BOTTOM ROW ===
-      drawGroupedBar(ctx, w * 0.03, h * 0.78, w * 0.18, h * 0.12, time, 1);
-      drawLineChart(ctx, w * 0.76, h * 0.80, w * 0.2, h * 0.1, time, 1);
-      drawBarChart(ctx, w * 0.25, h * 0.82, w * 0.14, h * 0.1, time + 2, 0.7);
-      drawRadialHistogram(ctx, w * 0.55, h * 0.86, s * 0.035, time + 3, 0.5);
+        // BOTTOM ROW
+        { type: "rect", x: w * 0.03, y: h * 0.78, w: w * 0.18, h: h * 0.12,
+          draw: (t, a, sc) => drawGroupedBar(ctx, w * 0.03 - (w * 0.18) * (sc - 1) / 2, h * 0.78 - (h * 0.12) * (sc - 1) / 2, w * 0.18 * sc, h * 0.12 * sc, t, a) },
+        { type: "rect", x: w * 0.76, y: h * 0.80, w: w * 0.2, h: h * 0.1,
+          draw: (t, a, sc) => drawLineChart(ctx, w * 0.76 - (w * 0.2) * (sc - 1) / 2, h * 0.80 - (h * 0.1) * (sc - 1) / 2, w * 0.2 * sc, h * 0.1 * sc, t, a) },
+        { type: "rect", x: w * 0.25, y: h * 0.82, w: w * 0.14, h: h * 0.1,
+          draw: (t, a, sc) => drawBarChart(ctx, w * 0.25 - (w * 0.14) * (sc - 1) / 2, h * 0.82 - (h * 0.1) * (sc - 1) / 2, w * 0.14 * sc, h * 0.1 * sc, t + 2, a) },
+        { type: "circle", x: w * 0.55, y: h * 0.86, w: s * 0.035, h: 0,
+          draw: (t, a, sc) => drawRadialHistogram(ctx, w * 0.55, h * 0.86, s * 0.035 * sc, t + 3, a) },
+      ];
+
+      const baseAlphas = [1, 0.9, 1, 0.9, 0.85, 0.8, 0.75, 0.7, 1, 1, 0.7, 0.5];
+
+      const m = mouseRef.current;
+      charts.forEach((c, i) => {
+        // Hit test with generous padding so hover is easy to trigger
+        let hovered = false;
+        if (m) {
+          const pad = 20;
+          if (c.type === "rect") {
+            hovered = m.x >= c.x - pad && m.x <= c.x + c.w + pad &&
+                      m.y >= c.y - pad && m.y <= c.y + c.h + pad;
+          } else {
+            const dx = m.x - c.x, dy = m.y - c.y;
+            hovered = Math.sqrt(dx * dx + dy * dy) <= c.w + pad;
+          }
+        }
+        // Smoothly ease hover progress
+        const target = hovered ? 1 : 0;
+        hoverProgress[i] += (target - hoverProgress[i]) * 0.12;
+
+        // Speed: 1x idle → 4x hovered. Scale: 1x → 1.5x. Alpha boost on hover.
+        const speedMult = 1 + hoverProgress[i] * 3;
+        const scale = 1 + hoverProgress[i] * 0.5;
+        const alpha = Math.min(1, baseAlphas[i] + hoverProgress[i] * 0.3);
+        localTimes[i] += 0.008 * speedMult;
+
+        c.draw(localTimes[i], alpha, scale);
+      });
 
       animRef.current = requestAnimationFrame(draw);
     };
@@ -435,6 +503,8 @@ export default function AnimatedCharts() {
     return () => {
       cancelAnimationFrame(animRef.current);
       window.removeEventListener("resize", resize);
+      canvas.removeEventListener("mousemove", handleMove);
+      canvas.removeEventListener("mouseleave", handleLeave);
     };
   }, []);
 
@@ -442,7 +512,7 @@ export default function AnimatedCharts() {
     <canvas
       ref={canvasRef}
       className="absolute inset-0 w-full h-full"
-      style={{ opacity: 0.75 }}
+      style={{ opacity: 0.75, pointerEvents: "auto" }}
     />
   );
 }
