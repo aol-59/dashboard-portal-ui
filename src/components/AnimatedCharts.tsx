@@ -509,16 +509,16 @@ export default function AnimatedCharts() {
     return () => {
       cancelAnimationFrame(animRef.current);
       window.removeEventListener("resize", resize);
-      canvas.removeEventListener("mousemove", handleMove);
-      canvas.removeEventListener("mouseleave", handleLeave);
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseout", handleLeave);
     };
   }, []);
 
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 w-full h-full"
-      style={{ opacity: 0.75, pointerEvents: "auto" }}
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      style={{ opacity: 0.75 }}
     />
   );
 }
