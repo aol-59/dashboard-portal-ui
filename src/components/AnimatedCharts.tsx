@@ -410,14 +410,20 @@ export default function AnimatedCharts() {
 
     const handleMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
+        mouseRef.current = null;
+        return;
+      }
       mouseRef.current = {
-        x: (e.clientX - rect.left) * (canvas.width / rect.width),
-        y: (e.clientY - rect.top) * (canvas.height / rect.height),
+        x: x * (canvas.width / rect.width),
+        y: y * (canvas.height / rect.height),
       };
     };
     const handleLeave = () => { mouseRef.current = null; };
-    canvas.addEventListener("mousemove", handleMove);
-    canvas.addEventListener("mouseleave", handleLeave);
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseout", handleLeave);
 
     // Per-chart hover progress (0 = idle, 1 = fully hovered)
     const hoverProgress: number[] = new Array(12).fill(0);
@@ -503,16 +509,16 @@ export default function AnimatedCharts() {
     return () => {
       cancelAnimationFrame(animRef.current);
       window.removeEventListener("resize", resize);
-      canvas.removeEventListener("mousemove", handleMove);
-      canvas.removeEventListener("mouseleave", handleLeave);
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseout", handleLeave);
     };
   }, []);
 
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 w-full h-full"
-      style={{ opacity: 0.75, pointerEvents: "auto" }}
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      style={{ opacity: 0.75 }}
     />
   );
 }
