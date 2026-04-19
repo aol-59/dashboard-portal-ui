@@ -410,14 +410,20 @@ export default function AnimatedCharts() {
 
     const handleMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
+        mouseRef.current = null;
+        return;
+      }
       mouseRef.current = {
-        x: (e.clientX - rect.left) * (canvas.width / rect.width),
-        y: (e.clientY - rect.top) * (canvas.height / rect.height),
+        x: x * (canvas.width / rect.width),
+        y: y * (canvas.height / rect.height),
       };
     };
     const handleLeave = () => { mouseRef.current = null; };
-    canvas.addEventListener("mousemove", handleMove);
-    canvas.addEventListener("mouseleave", handleLeave);
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseout", handleLeave);
 
     // Per-chart hover progress (0 = idle, 1 = fully hovered)
     const hoverProgress: number[] = new Array(12).fill(0);
