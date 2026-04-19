@@ -11,7 +11,7 @@ interface LanguageContextType {
 
 const translations: Record<Language, Record<string, string>> = {
   en: {
-    "app.name": "Digital Vision Center",
+    "app.name": "Tourism Data Platform",
     "app.tagline": "Access your dashboards, analytics, and insights in one place",
     "app.secure_login": "Secure login powered by your organization",
     "app.agency": "Digital Transformation Agency",
@@ -108,7 +108,7 @@ const translations: Record<Language, Record<string, string>> = {
     "lang.toggle": "عربي",
   },
   ar: {
-    "app.name": "مركز الرؤية الرقمية",
+    "app.name": "منصة البيانات السياحية",
     "app.tagline": "الوصول إلى لوحات المعلومات والتحليلات والرؤى في مكان واحد",
     "app.secure_login": "تسجيل دخول آمن مدعوم من مؤسستك",
     "app.agency": "وكالة التحول الرقمي",
