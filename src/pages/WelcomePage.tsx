@@ -163,34 +163,6 @@ export default function WelcomePage() {
           </Button>
         </div>
 
-        {/* Stats strip */}
-        <div className="mt-16 grid grid-cols-3 gap-8 md:gap-16">
-          {[
-            { value: "13", label: language === "ar" ? "منطقة" : "Regions" },
-            { value: "24/7", label: language === "ar" ? "متاح" : "Available" },
-            { value: "AI", label: language === "ar" ? "مدعوم" : "Powered" },
-          ].map((s, i) => (
-            <div
-              key={i}
-              className={`text-center transition-all duration-700 ${
-                mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-              }`}
-              style={{ transitionDelay: `${600 + i * 150}ms` }}
-            >
-              <div
-                className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent"
-                style={{
-                  backgroundImage: "linear-gradient(135deg, hsl(153,100%,60%), hsl(170,80%,55%))",
-                }}
-              >
-                {s.value}
-              </div>
-              <div className="text-[10px] md:text-xs text-white/40 uppercase tracking-widest mt-1">
-                {s.label}
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
 
       {/* Footer */}
