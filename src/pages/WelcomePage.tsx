@@ -4,6 +4,8 @@ import { LogIn, Sparkles, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { login, isAuthenticated } from "@/lib/auth";
 import { useLanguage } from "@/lib/language";
+import SaudiMapAnimation from "@/components/SaudiMapAnimation";
+import AnimatedCharts from "@/components/AnimatedCharts";
 
 export default function WelcomePage() {
   const navigate = useNavigate();
@@ -35,6 +37,10 @@ export default function WelcomePage() {
         <div className="absolute -bottom-40 -right-40 w-[600px] h-[600px] rounded-full bg-[hsl(170,80%,35%)] opacity-[0.15] blur-[130px] animate-pulse" style={{ animationDuration: "8s" }} />
         <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] rounded-full bg-[hsl(43,90%,50%)] opacity-[0.06] blur-[120px]" />
       </div>
+
+      {/* Saudi map + animated charts */}
+      <SaudiMapAnimation />
+      <AnimatedCharts />
 
       {/* Animated grid */}
       <div
