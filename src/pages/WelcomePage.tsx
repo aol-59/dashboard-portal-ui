@@ -11,28 +11,16 @@ export default function WelcomePage() {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const [mounted, setMounted] = useState(false);
-  const [mouse, setMouse] = useState({ x: 50, y: 50 });
 
   useEffect(() => {
     if (isAuthenticated()) navigate("/portal", { replace: true });
     setTimeout(() => setMounted(true), 100);
-    const onMove = (e: MouseEvent) => {
-      setMouse({ x: (e.clientX / window.innerWidth) * 100, y: (e.clientY / window.innerHeight) * 100 });
-    };
-    window.addEventListener("mousemove", onMove);
-    return () => window.removeEventListener("mousemove", onMove);
   }, [navigate]);
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-[hsl(160,40%,4%)]">
       {/* Aurora gradient mesh */}
       <div className="absolute inset-0">
-        <div
-          className="absolute inset-0 transition-all duration-700"
-          style={{
-            background: `radial-gradient(circle at ${mouse.x}% ${mouse.y}%, hsl(153,90%,30%,0.3) 0%, transparent 7%)`,
-          }}
-        />
         <div className="absolute -top-40 -left-40 w-[700px] h-[700px] rounded-full bg-[hsl(153,90%,30%)] opacity-[0.18] blur-[140px] animate-pulse" style={{ animationDuration: "6s" }} />
         <div className="absolute -bottom-40 -right-40 w-[600px] h-[600px] rounded-full bg-[hsl(170,80%,35%)] opacity-[0.15] blur-[130px] animate-pulse" style={{ animationDuration: "8s" }} />
         <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] rounded-full bg-[hsl(43,90%,50%)] opacity-[0.06] blur-[120px]" />
