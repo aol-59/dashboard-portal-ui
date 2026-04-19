@@ -98,21 +98,6 @@ export default function WelcomePage() {
           mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
         }`}
       >
-        {/* Status pill */}
-        <div
-          className={`mb-8 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[hsl(153,100%,40%,0.3)] bg-[hsl(153,80%,10%,0.4)] backdrop-blur-md transition-all duration-1000 delay-200 ${
-            mounted ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
-          }`}
-        >
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[hsl(153,100%,50%)] opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-[hsl(153,100%,50%)]" />
-          </span>
-          <span className="text-xs font-medium text-[hsl(153,80%,80%)] tracking-wider uppercase">
-            {language === "ar" ? "نظام مباشر" : "System Online"}
-          </span>
-          <Sparkles className="h-3 w-3 text-[hsl(43,90%,60%)]" />
-        </div>
 
         {/* Title with gradient */}
         <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.05]">
