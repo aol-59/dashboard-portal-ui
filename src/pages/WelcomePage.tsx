@@ -30,7 +30,7 @@ export default function WelcomePage() {
         <div
           className="absolute inset-0 transition-all duration-700"
           style={{
-            background: `radial-gradient(circle at ${mouse.x}% ${mouse.y}%, hsl(153,90%,30%,0.25) 0%, transparent 45%)`,
+            background: `radial-gradient(circle at ${mouse.x}% ${mouse.y}%, hsl(153,90%,30%,0.25) 0%, transparent 18%)`,
           }}
         />
         <div className="absolute -top-40 -left-40 w-[700px] h-[700px] rounded-full bg-[hsl(153,90%,30%)] opacity-[0.18] blur-[140px] animate-pulse" style={{ animationDuration: "6s" }} />
