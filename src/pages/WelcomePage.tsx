@@ -21,8 +21,6 @@ export default function WelcomePage() {
     <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-[hsl(160,40%,4%)]">
       {/* Aurora gradient mesh */}
       <div className="absolute inset-0">
-        <div className="absolute -top-40 -left-40 w-[700px] h-[700px] rounded-full bg-[hsl(153,90%,30%)] opacity-[0.18] blur-[140px] animate-pulse" style={{ animationDuration: "6s" }} />
-        <div className="absolute -bottom-40 -right-40 w-[600px] h-[600px] rounded-full bg-[hsl(170,80%,35%)] opacity-[0.15] blur-[130px] animate-pulse" style={{ animationDuration: "8s" }} />
         <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] rounded-full bg-[hsl(43,90%,50%)] opacity-[0.06] blur-[120px]" />
       </div>
 

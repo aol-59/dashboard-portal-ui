@@ -518,7 +518,7 @@ export default function AnimatedCharts() {
     <canvas
       ref={canvasRef}
       className="absolute inset-0 w-full h-full pointer-events-none"
-      style={{ opacity: 0.75 }}
+      style={{ opacity: 0.85 }}
     />
   );
 }
