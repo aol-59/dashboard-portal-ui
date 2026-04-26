@@ -402,8 +402,9 @@ export default function AnimatedCharts() {
     if (!ctx) return;
 
     const resize = () => {
-      canvas.width = canvas.offsetWidth * 2;
-      canvas.height = canvas.offsetHeight * 2;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = canvas.offsetWidth * dpr;
+      canvas.height = canvas.offsetHeight * dpr;
     };
     resize();
     window.addEventListener("resize", resize);
