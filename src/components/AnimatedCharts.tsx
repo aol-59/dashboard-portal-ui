@@ -403,8 +403,14 @@ export default function AnimatedCharts() {
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
-      canvas.width = canvas.offsetWidth * dpr;
-      canvas.height = canvas.offsetHeight * dpr;
+      // Guard: never set canvas size to 0 — an uninitialized canvas can render as a black box
+      const cw = Math.max(1, canvas.offsetWidth);
+      const ch = Math.max(1, canvas.offsetHeight);
+      canvas.width = cw * dpr;
+      canvas.height = ch * dpr;
+      // Reset to a known-clean transparent state immediately
+      ctx.globalCompositeOperation = "source-over";
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
     };
     resize();
     window.addEventListener("resize", resize);
