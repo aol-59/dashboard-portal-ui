@@ -442,6 +442,8 @@ export default function AnimatedCharts() {
       time += 0.008;
       const w = canvas.width;
       const h = canvas.height;
+      // Force a clean transparent slate every frame — guarantees no solid fills can persist
+      ctx.globalCompositeOperation = "source-over";
       ctx.clearRect(0, 0, w, h);
 
       const s = Math.min(w, h);
